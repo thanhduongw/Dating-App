@@ -6,9 +6,9 @@ import OTPScreen from "../screens/auth/OTPScreen";
 import SignInWithPhone from "../screens/auth/SignInWithPhone";
 import ForgotPasswordScreen from "../screens/auth/ForgotPasswordScreen";
 import ResetPasswordScreen from "../screens/auth/ResetPasswordScreen";
-import HomeScreen from "../screens/HomeScreen";
 import { TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { HomeScreen } from "../screens/HomeScreen";
 
 // navigation/AuthNavigator.tsx
 export type AuthStackParamList = {

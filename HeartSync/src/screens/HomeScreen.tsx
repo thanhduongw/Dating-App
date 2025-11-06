@@ -1,212 +1,150 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  SafeAreaView,
+    View,
+    StyleSheet,
+    Text,
+    ActivityIndicator,
+    Animated,
+    PanResponder,
+    Dimensions,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { SwipeProfile, SwipeAction } from "../types";
+import { fakeSwipeService } from "../services/userApi";
+import SwipeCard from "../components/SwipeCard";
 
-export default function HomeScreen() {
-  const navigation = useNavigation();
+const { width } = Dimensions.get("window");
+const SWIPE_THRESHOLD = width * 0.25;
 
-  return (
-    <SafeAreaView style={styles.container}>
-      {/* ✅ Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity>
-            <Ionicons name="menu-outline" size={26} color="#444" />
-          </TouchableOpacity>
+export const HomeScreen: React.FC = () => {
+    const [profiles, setProfiles] = useState<SwipeProfile[]>([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [actions, setActions] = useState<SwipeAction[]>([]);
+    const [loading, setLoading] = useState(true);
 
-          <TouchableOpacity style={{ marginLeft: 10 }}>
-            <Ionicons name="refresh-outline" size={24} color="#444" />
-          </TouchableOpacity>
-        </View>
+    const position = new Animated.ValueXY();
 
-        <Text style={styles.headerTitle}>HeartSync</Text>
+    useEffect(() => {
+        const loadProfiles = async () => {
+            const data = await fakeSwipeService.getSwipeProfiles();
+            setProfiles(data);
+            setLoading(false);
+        };
+        loadProfiles();
+    }, []);
 
-        <TouchableOpacity
-          style={styles.filterBtn}
-          onPress={() => navigation.navigate("FilterScreen" as never)}
-        >
-          <Ionicons name="options-outline" size={22} color="#5A6CF3" />
-        </TouchableOpacity>
-      </View>
+    const panResponder = PanResponder.create({
+        onMoveShouldSetPanResponder: (_, gesture) =>
+            Math.abs(gesture.dx) > 10 || Math.abs(gesture.dy) > 10,
+        onPanResponderMove: (_, gesture) => {
+            position.setValue({ x: gesture.dx, y: gesture.dy });
+        },
+        onPanResponderRelease: (_, gesture) => {
+            if (gesture.dx > SWIPE_THRESHOLD) {
+                handleSwipe("like");
+            } else if (gesture.dx < -SWIPE_THRESHOLD) {
+                handleSwipe("pass");
+            } else {
+                Animated.spring(position, {
+                    toValue: { x: 0, y: 0 },
+                    useNativeDriver: true,
+                }).start();
+            }
+        },
+    });
 
-      {/* ✅ Progress bar */}
-      <View style={styles.progressWrap}>
-        <View style={styles.progressBar}>
-          <View style={styles.progressFill} />
-        </View>
-      </View>
+    const handleSwipe = (type: "like" | "pass") => {
+        const profile = profiles[currentIndex];
+        if (!profile) return;
 
-      {/* ✅ Main Card */}
-      <View style={styles.card}>
-        <Image
-          source={{
-            uri: "https://randomuser.me/api/portraits/women/65.jpg",
-          }}
-          style={styles.image}
-        />
+        const direction = type === "like" ? width : -width;
 
-        {/* Overlay Text */}
-        <View style={styles.overlay}>
-          <View style={styles.topTextBox}>
-            <Text style={styles.swipeTitle}>Swipe right if you like</Text>
-            <Text style={styles.swipeDesc}>
-              If the person also swipes right on you,{"\n"}
-              it’s a match and you can connect.
-            </Text>
-          </View>
+        Animated.timing(position, {
+            toValue: { x: direction, y: 0 },
+            duration: 250,
+            useNativeDriver: true,
+        }).start(() => {
+            setActions((prev) => [
+                ...prev,
+                { type, profileId: profile.id, timestamp: new Date() },
+            ]);
+            position.setValue({ x: 0, y: 0 });
+            setCurrentIndex((prev) => prev + 1);
+        });
+    };
 
-          <View style={styles.bottomTextBox}>
-            <Text style={styles.swipeTitle}>Swipe left to pass</Text>
-            <Text style={styles.swipeDesc}>
-              If the person is not your cup of tea,{"\n"}
-              simply pass. It’s that easy!
-            </Text>
-          </View>
-        </View>
+    const rotate = position.x.interpolate({
+        inputRange: [-width / 2, 0, width / 2],
+        outputRange: ["-15deg", "0deg", "15deg"],
+        extrapolate: "clamp",
+    });
 
-        {/* ✅ User info */}
-        <View style={styles.userInfo}>
-          <Text style={styles.name}>
-            Ava Jones, 25{" "}
-            <Ionicons name="checkmark-circle" color="#62A3FF" size={16} />
-          </Text>
-          <View style={styles.badgesRow}>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>she/ her/ hers</Text>
+    const animatedStyle = {
+        transform: [...position.getTranslateTransform(), { rotate }],
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.center}>
+                <ActivityIndicator size="large" color="#ff5a90" />
             </View>
-            <View style={[styles.row, { marginTop: 4 }]}>
-              <Ionicons
-                name="briefcase-outline"
-                size={16}
-                color="#fff"
-                style={{ marginRight: 4 }}
-              />
-              <Text style={styles.jobText}>Business Analyst at Tech</Text>
+        );
+    }
+
+    return (
+        <View style={styles.container}>
+            {profiles
+                .map((profile, index) => {
+                    if (index < currentIndex) return null;
+
+                    const isTop = index === currentIndex;
+
+                    return (
+                        <Animated.View
+                            key={profile.id}
+                            {...(isTop ? panResponder.panHandlers : {})}
+                            style={[
+                                styles.cardContainer,
+                                isTop && animatedStyle,
+                                { zIndex: profiles.length - index },
+                            ]}
+                        >
+                            <SwipeCard profile={profile} />
+                        </Animated.View>
+                    );
+                })
+                .reverse()}
+
+            <View style={styles.footer}>
+                <Text style={styles.footerText}>
+                    Swiped: {actions.length} ({actions.filter((a) => a.type === "like").length} likes)
+                </Text>
             </View>
-          </View>
         </View>
-      </View>
-    </SafeAreaView>
-  );
-}
+    );
+};
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#EFE9FF", paddingHorizontal: 18 },
-
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 12,
-    paddingHorizontal: 6,
-  },
-
-  progressBar: {
-    width: "60%",
-    height: 6,
-    backgroundColor: "#D6D0FF",
-    alignSelf: "center",
-    borderRadius: 10,
-    marginTop: 10,
-  },
-  progressFill: {
-    width: "35%",
-    height: "100%",
-    backgroundColor: "#7A6AF7",
-    borderRadius: 10,
-  },
-
-  card: {
-    marginTop: 18,
-    backgroundColor: "#7A6AF7",
-    borderRadius: 18,
-    overflow: "hidden",
-    height: "72%",
-  },
-
-  image: { width: "100%", height: "100%", opacity: 0.55 },
-
-  overlay: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    justifyContent: "space-between",
-    paddingVertical: 22,
-    paddingHorizontal: 18,
-  },
-
-  swipeTitle: {
-    color: "#fff",
-    fontWeight: "800",
-    fontSize: 20,
-  },
-  swipeDesc: {
-    color: "#fff",
-    fontSize: 13,
-    marginTop: 8,
-    opacity: 0.9,
-  },
-
-  topTextBox: { marginTop: 15 },
-  bottomTextBox: { marginBottom: 60 },
-
-  userInfo: {
-    position: "absolute",
-    bottom: 10,
-    left: 14,
-  },
-
-  name: { fontSize: 22, fontWeight: "700", color: "#fff" },
-
-  row: { flexDirection: "row", alignItems: "center" },
-
-  badgesRow: { marginTop: 6 },
-
-  badge: {
-    backgroundColor: "rgba(255,255,255,0.3)",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-    alignSelf: "flex-start",
-  },
-  badgeText: { fontSize: 11, color: "#fff", fontWeight: "600" },
-
-  jobText: { fontSize: 12, color: "#fff" },
-
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    width: 70,
-  },
-
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#222",
-  },
-
-  filterBtn: {
-    width: 34,
-    height: 34,
-    backgroundColor: "#F1EEFF",
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-  },
-
-  progressWrap: {
-    alignItems: "center",
-    marginTop: 10,
-  },
+    container: {
+        flex: 1,
+        backgroundColor: "#fafafa",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    center: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    cardContainer: {
+        position: "absolute",
+        top: 80,
+    },
+    footer: {
+        position: "absolute",
+        bottom: 40,
+    },
+    footerText: {
+        fontSize: 16,
+        color: "#555",
+    },
 });
