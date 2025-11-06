@@ -10,13 +10,18 @@ import HomeScreen from "../screens/HomeScreen";
 import { TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+// navigation/AuthNavigator.tsx
 export type AuthStackParamList = {
     SignIn: undefined;
-    SignUp: undefined;
     SignInWithPhone: undefined;
+    SignUp: undefined;
     ForgotPassword: undefined;
-    OTP: { fromForgotPassword?: boolean; fromSignUp?: boolean } | undefined;
-    ResetPassword: undefined;
+    OTP: {
+        fromForgotPassword?: boolean;
+        fromSignUp?: boolean;
+        phone?: string;
+    };
+    ResetPassword: { phone: string };
     Home: undefined;
 };
 
