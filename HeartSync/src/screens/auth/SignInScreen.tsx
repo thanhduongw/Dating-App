@@ -8,8 +8,8 @@ import { AuthStackParamList } from "../../navigation/AuthNavigator";
 export default function SignInScreen() {
     const navigation = useNavigation<StackNavigationProp<AuthStackParamList, "SignIn">>();
 
-    const handleAppleLogin = () => navigation.replace("Home");
-    const handleFacebookLogin = () => navigation.replace("Home");
+    const handleAppleLogin = () => navigation.replace("Tabs");
+    const handleFacebookLogin = () => navigation.replace("Tabs");
     const handlePhoneLogin = () => navigation.navigate("SignInWithPhone");
     const handleGoToSignUp = () => navigation.navigate("SignUp");
 

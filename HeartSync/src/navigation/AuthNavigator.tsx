@@ -8,9 +8,8 @@ import ForgotPasswordScreen from "../screens/auth/ForgotPasswordScreen";
 import ResetPasswordScreen from "../screens/auth/ResetPasswordScreen";
 import { TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { HomeScreen } from "../screens/HomeScreen";
+import StackNavigator from "./StackNavigator";
 
-// navigation/AuthNavigator.tsx
 export type AuthStackParamList = {
     SignIn: undefined;
     SignInWithPhone: undefined;
@@ -22,7 +21,7 @@ export type AuthStackParamList = {
         phone?: string;
     };
     ResetPassword: { phone: string };
-    Home: undefined;
+    Tabs: undefined;
 };
 
 const Stack = createStackNavigator<AuthStackParamList>();
@@ -58,7 +57,7 @@ export default function AuthNavigator() {
                 component={ResetPasswordScreen}
                 options={({ navigation }) => defaultHeader({ navigation }, "Reset Password")}
             />
-            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Tabs" component={StackNavigator} />
         </Stack.Navigator>
     );
 }

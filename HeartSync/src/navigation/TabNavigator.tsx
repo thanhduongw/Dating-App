@@ -1,13 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { RouteProp } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-
 import SubscriptionPlansScreen from "../screens/profile/SubscriptionPlansScreen";
 import MessagesScreen from "../screens/message/MessagesScreen";
-import { HomeScreen } from "../screens/HomeScreen";
-// import HomeSwipeScreen from "../screens/HomeScreen";
+import { HomeScreen } from "../screens/SwipeScreen";
 
 function Placeholder({ label }: { label: string }) {
   return (
@@ -18,10 +15,11 @@ function Placeholder({ label }: { label: string }) {
 }
 
 export type RootTabParamList = {
-  Subscription: undefined;
+  Home: undefined;
   Likes: undefined;
-  Saved: undefined;
   Messages: undefined;
+  Subscription: undefined;
+  Saved: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -29,51 +27,49 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 export default function TabNavigator() {
   return (
     <Tab.Navigator
-      initialRouteName="Subscription"
-      screenOptions={({ route }: { route: RouteProp<RootTabParamList> }) => ({
+      initialRouteName="Home"
+      screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: styles.tabBar,
         tabBarIcon: ({ focused }) => {
-          const icons: Record<
-            keyof RootTabParamList,
-            keyof typeof Ionicons.glyphMap
-          > = {
-            Subscription: "person-outline",
-            Likes: "heart-outline",
-            Saved: "bookmark-outline",
-            Messages: "chatbubble-outline",
-          };
+          let iconName: keyof typeof Ionicons.glyphMap = "ellipse-outline";
 
-          const icon = icons[route.name];
+          switch (route.name) {
+            case "Home":
+              iconName = "home-outline";
+              break;
+            case "Likes":
+              iconName = "heart-outline";
+              break;
+            case "Messages":
+              iconName = "chatbubble-outline";
+              break;
+            case "Subscription":
+              iconName = "person-outline";
+              break;
+            case "Saved":
+              iconName = "bookmark-outline";
+              break;
+          }
+
           const color = focused ? "#5A6CF3" : "#777";
 
           return (
             <View style={styles.iconWrap}>
-              <Ionicons
-                name={icon}
-                size={28}
-                color={color}
-                style={{ opacity: focused ? 1 : 0.6 }}
-              />
+              <Ionicons name={iconName} size={28} color={color} />
               {focused && <View style={styles.activeBar} />}
               {route.name === "Messages" && <View style={styles.badgeDot} />}
             </View>
           );
         },
-        tabBarActiveTintColor: "#5A6CF3",
-        tabBarInactiveTintColor: "#777",
       })}
     >
-      <Tab.Screen name="Subscription" component={SubscriptionPlansScreen} />
-      <Tab.Screen
-        name="Likes"
-        component={HomeScreen}
-        options={{ headerShown: false }}
-      />
-
-      <Tab.Screen name="Saved" children={() => <Placeholder label="Saved" />} />
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Likes" children={() => <Placeholder label="Likes" />} />
       <Tab.Screen name="Messages" component={MessagesScreen} />
+      <Tab.Screen name="Subscription" component={SubscriptionPlansScreen} />
+      <Tab.Screen name="Saved" children={() => <Placeholder label="Saved" />} />
     </Tab.Navigator>
   );
 }
@@ -84,7 +80,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   tabBar: {
     position: "absolute",
     bottom: 0,
@@ -100,14 +95,12 @@ const styles = StyleSheet.create({
     elevation: 10,
     borderTopWidth: 0,
   },
-
   iconWrap: {
     alignItems: "center",
     justifyContent: "center",
     width: 60,
     height: "100%",
   },
-
   activeBar: {
     width: 30,
     height: 4,
@@ -116,7 +109,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: -8,
   },
-
   badgeDot: {
     position: "absolute",
     top: 8,

@@ -34,7 +34,7 @@ export default function SignInWithPhone() {
         try {
             await loginUser(phone, password);
             Alert.alert("Success", "Logged in successfully!");
-            navigation.replace("Home");
+            navigation.replace("Tabs");
         } catch (err: any) {
             Alert.alert("Login Failed", err.message);
         } finally {
