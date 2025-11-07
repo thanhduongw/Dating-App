@@ -4,10 +4,18 @@ export interface SwipeProfile {
     name: string;
     age: number;
     pronouns: string;
+    gender: string;
+    occupation: string;
+    education: string;
+    height: string;
+    smoking: string;
+    drinking: string;
+    children: string;
     job: string;
     photos: string[];
     distance?: number;
     bio?: string;
+    aboutMe?: string;
 }
 
 export interface SwipeAction {

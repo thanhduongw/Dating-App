@@ -4,7 +4,8 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import SubscriptionPlansScreen from "../screens/profile/SubscriptionPlansScreen";
 import MessagesScreen from "../screens/message/MessagesScreen";
-import { HomeScreen } from "../screens/SwipeScreen";
+import { HomeScreen } from "../screens/HomeScreen";
+
 
 function Placeholder({ label }: { label: string }) {
   return (

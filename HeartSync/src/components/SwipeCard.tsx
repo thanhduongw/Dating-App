@@ -1,6 +1,10 @@
+// src/components/SwipeCard.tsx
 import React from "react";
-import { View, Text, Image, StyleSheet, Dimensions } from "react-native";
+import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import { SwipeProfile } from "../types";
+import { useNavigation } from "expo-router";
+import { RootStackParamList } from "../navigation/StackNavigator";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 const { width, height } = Dimensions.get("window");
 
@@ -9,21 +13,28 @@ interface SwipeCardProps {
 }
 
 export const SwipeCard: React.FC<SwipeCardProps> = ({ profile }) => {
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+    const handlePress = () => {
+        navigation.navigate("ProfileDetail", { profile });
+    };
     const photo = profile.photos?.[0];
 
     return (
-        <View style={styles.card}>
-            <Image source={{ uri: photo }} style={styles.image} />
-            <View style={styles.infoContainer}>
-                <Text style={styles.name}>
-                    {profile.name}, {profile.age}
-                </Text>
-                <Text style={styles.job}>{profile.job}</Text>
-                {profile.distance && (
-                    <Text style={styles.distance}>{profile.distance} km away</Text>
-                )}
+        <TouchableOpacity activeOpacity={0.9} onPress={handlePress}>
+            <View style={styles.card}>
+                <Image source={{ uri: photo }} style={styles.image} />
+                <View style={styles.infoContainer}>
+                    <Text style={styles.name}>
+                        {profile.name}, {profile.age}
+                    </Text>
+                    <Text style={styles.job}>{profile.job}</Text>
+                    {profile.distance && (
+                        <Text style={styles.distance}>{profile.distance} km away</Text>
+                    )}
+                </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 };
 
