@@ -1,0 +1,122 @@
+{
+  "userA_userB": [
+    {
+      "roomId": "userA_userB",
+      "sender": "userA",
+      "text": "Lo",
+      "time": "2025-11-08T19:47:06.203Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userA",
+      "text": "Con cac",
+      "time": "2025-11-08T19:47:15.446Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userA",
+      "text": "Sao gửi 2 cái v",
+      "time": "2025-11-08T19:47:24.582Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userA",
+      "text": "alo",
+      "time": "2025-11-08T19:48:34.406Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userA",
+      "text": "Lô",
+      "time": "2025-11-08T19:48:42.102Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userA",
+      "text": "Thua",
+      "time": "2025-11-08T19:48:58.792Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userA",
+      "text": "tai sao lai hien thi 2 cai, nhung khi thoat ra vo lai thi chi con 1",
+      "time": "2025-11-08T19:49:23.743Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userA",
+      "text": "Alo",
+      "time": "2025-11-08T19:52:04.232Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userA",
+      "text": "Thua",
+      "time": "2025-11-08T19:53:02.315Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userA",
+      "text": "Nguyen Nhat Duong",
+      "time": "2025-11-08T19:53:10.500Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userB",
+      "text": "Thua",
+      "time": "2025-11-08T20:01:27.194Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userB",
+      "text": "H này đi nhậu",
+      "time": "2025-11-08T20:01:31.868Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userB",
+      "text": "Cc",
+      "time": "2025-11-08T20:02:32.859Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userB",
+      "text": "Lol má",
+      "time": "2025-11-08T20:02:56.105Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userB",
+      "text": "Đù",
+      "time": "2025-11-08T20:06:53.207Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userA",
+      "text": "hay đó",
+      "time": "2025-11-08T20:07:01.357Z"
+    }
+  ],
+  "userA_userC": [
+    {
+      "roomId": "userA_userC",
+      "sender": "userB",
+      "text": "Ê",
+      "time": "2025-11-08T20:05:49.411Z"
+    },
+    {
+      "roomId": "userA_userC",
+      "sender": "userB",
+      "text": "ac",
+      "time": "2025-11-08T20:06:08.154Z"
+    }
+  ],
+  "userA_userD": [
+    {
+      "roomId": "userA_userD",
+      "sender": "userB",
+      "text": "xin chao ban",
+      "time": "2025-11-08T20:06:16.966Z"
+    }
+  ]
+}

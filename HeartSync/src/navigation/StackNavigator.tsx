@@ -6,6 +6,7 @@ import VideoCallScreen from "../screens/message/VideoCallScreen";
 import { SwipeProfile } from "../types";
 import EditProfileScreen from "../screens/profile/EditProfileScreen";
 import { ProfileDetailScreen } from "../screens/profile/ProfileDetailScreen";
+import MessagesScreen from "../screens/message/MessagesScreen";
 
 export type RootStackParamList = {
   Tabs: undefined;
