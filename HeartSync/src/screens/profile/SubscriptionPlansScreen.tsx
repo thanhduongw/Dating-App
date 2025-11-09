@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,8 +11,46 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
+const BASE_URL =
+  "https://68e8d0d2f2707e6128cc55f3.mockapi.io/22639261_NguyenNhatDuong";
+
 export default function SubscriptionPlansScreen() {
   const navigation = useNavigation();
+  const [user, setUser] = useState<any>(null);
+
+  // 🧠 Fetch profile từ MockAPI
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/profiles/1`);
+        const data = await res.json();
+        setUser(data);
+      } catch (err) {
+        console.error("❌ Error fetching user:", err);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  // 📊 Tính % hoàn thành hồ sơ
+  const calculateCompletion = (data: any) => {
+    const fields = [
+      "name",
+      "occupation",
+      "education",
+      "location",
+      "gender",
+      "height",
+      "smoking",
+      "drinking",
+      "children",
+      "pets",
+      "zodiac",
+      "religion",
+    ];
+    const filled = fields.filter((f) => data[f]);
+    return Math.round((filled.length / fields.length) * 100);
+  };
 
   const features = [
     { title: "Unlimited swipes", free: true, premium: true },
@@ -40,13 +79,20 @@ export default function SubscriptionPlansScreen() {
           <View style={styles.row}>
             <Image
               source={{
-                uri: "https://randomuser.me/api/portraits/men/40.jpg",
+                uri:
+                  user?.mainPhoto ||
+                  "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png",
               }}
               style={styles.avatar}
             />
 
             <View>
-              <Text style={styles.userName}>Joshua Edwards, 29</Text>
+              <Text style={styles.userName}>
+                {user ? user.name || "Unnamed User" : "Loading..."}
+              </Text>
+              <Text style={styles.userSub}>
+                {user?.occupation ? user.occupation : "No occupation added"}
+              </Text>
 
               <TouchableOpacity
                 onPress={() => navigation.navigate("EditProfile" as never)}
@@ -55,12 +101,21 @@ export default function SubscriptionPlansScreen() {
               </TouchableOpacity>
 
               {/* Progress */}
-              <View style={{ marginTop: 10 }}>
-                <Text style={styles.progressText}>45% complete</Text>
-                <View style={styles.progressBox}>
-                  <View style={styles.progressFill} />
+              {user && (
+                <View style={{ marginTop: 10 }}>
+                  <Text style={styles.progressText}>
+                    {calculateCompletion(user)}% complete
+                  </Text>
+                  <View style={styles.progressBox}>
+                    <View
+                      style={[
+                        styles.progressFill,
+                        { width: `${calculateCompletion(user)}%` },
+                      ]}
+                    />
+                  </View>
                 </View>
-              </View>
+              )}
             </View>
           </View>
 
@@ -140,7 +195,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: 10, // ✅ tránh bị che bởi StatusBar
+    paddingTop: 10,
   },
   profileSection: {
     backgroundColor: "#fff",
@@ -152,8 +207,8 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center" },
   avatar: { width: 70, height: 70, borderRadius: 50, marginRight: 15 },
   userName: { fontSize: 19, fontWeight: "700" },
+  userSub: { fontSize: 13, color: "#777", marginTop: 2 },
   editBtn: { fontSize: 12, color: "#5A6CF3", marginTop: 4 },
-
   progressText: {
     fontSize: 11,
     color: "#5A6CF3",
@@ -167,12 +222,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   progressFill: {
-    width: "45%",
     height: "100%",
     backgroundColor: "#5A6CF3",
     borderRadius: 10,
   },
-
   verifyCard: {
     marginTop: 22,
     padding: 14,
@@ -184,7 +237,6 @@ const styles = StyleSheet.create({
   },
   verifyBold: { color: "#5A6CF3", fontWeight: "700", fontSize: 13 },
   verifyTxt: { color: "#5A6CF3", fontSize: 12 },
-
   tabs: {
     flexDirection: "row",
     justifyContent: "center",
@@ -197,7 +249,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     borderBottomWidth: 2,
   },
-
   premiumCard: {
     backgroundColor: "#5A6CF3",
     marginHorizontal: 20,
@@ -216,7 +267,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   upgradeTxt: { color: "#5A6CF3", fontWeight: "700" },
-
   table: {
     backgroundColor: "#fff",
     marginHorizontal: 20,

@@ -1,3 +1,4 @@
+import React from "react";
 import {
   View,
   Text,
@@ -5,56 +6,55 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
   TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { currentUser } from "../../services/auth";
+import { makeRoomId } from "../../services/room";
+// 👈 helper tạo roomId
 
 export default function MessagesScreen() {
   const navigation = useNavigation();
 
+  // 🔹 Giả lập danh sách người từng match
   const matches = [
     {
-      id: 1,
+      id: "userB",
       name: "Maria White",
       avatar: "https://randomuser.me/api/portraits/women/20.jpg",
       online: true,
     },
     {
-      id: 2,
+      id: "userC",
       name: "Anna Fernandez",
       avatar: "https://randomuser.me/api/portraits/women/24.jpg",
       online: false,
     },
     {
-      id: 3,
+      id: "userD",
       name: "Jennifer Brown",
       avatar: "https://randomuser.me/api/portraits/women/25.jpg",
       online: true,
     },
-    {
-      id: 4,
-      name: "Charlotte Dane",
-      avatar: "https://randomuser.me/api/portraits/women/18.jpg",
-      online: true,
-    },
   ];
 
+  // 🔹 Giả lập danh sách chat gần đây
   const chats = [
     {
-      id: "1",
-      name: "Ava Jones",
-      message: "You: Hello!",
-      time: "1 hours ago",
-      avatar: "https://randomuser.me/api/portraits/women/22.jpg",
+      id: "chat1",
+      userId: "userB",
+      name: "Maria White",
+      message: "You: How was your day?",
+      time: "2h ago",
+      avatar: "https://randomuser.me/api/portraits/women/20.jpg",
       online: true,
     },
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* HEADER + SEARCH */}
+    <View style={styles.container}>
+      {/* Header + Search */}
       <View style={styles.header}>
         <TouchableOpacity>
           <Ionicons name="menu-outline" size={28} color="#444" />
@@ -71,7 +71,7 @@ export default function MessagesScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* MATCHES SECTION */}
+        {/* MATCHES */}
         <Text style={styles.sectionTitle}>Matches ({matches.length})</Text>
 
         <ScrollView
@@ -80,7 +80,18 @@ export default function MessagesScreen() {
           contentContainerStyle={styles.matchesContainer}
         >
           {matches.map((item) => (
-            <View key={item.id} style={styles.matchItem}>
+            <TouchableOpacity
+              key={item.id}
+              style={styles.matchItem}
+              onPress={() => {
+                const roomId = makeRoomId(currentUser.id, item.id);
+                // ép kiểu navigation để tránh TS lỗi
+                (navigation as any).navigate("ChatRoom", {
+                  roomId,
+                  target: item,
+                });
+              }}
+            >
               <View>
                 <Image
                   source={{ uri: item.avatar }}
@@ -89,13 +100,13 @@ export default function MessagesScreen() {
                 {item.online && <View style={styles.onlineDot} />}
               </View>
               <Text style={styles.matchName}>{item.name}</Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
 
         <View style={styles.divider} />
 
-        {/* CHATS SECTION */}
+        {/* CHATS */}
         <View style={styles.rowBetween}>
           <Text style={styles.sectionTitle}>Chats ({chats.length})</Text>
           <Ionicons name="filter-outline" size={22} color="#444" />
@@ -105,7 +116,18 @@ export default function MessagesScreen() {
           <TouchableOpacity
             key={chat.id}
             style={styles.chatRow}
-            onPress={() => navigation.navigate("ChatRoomScreen" as never)}
+            onPress={() => {
+              const targetUser = {
+                id: chat.userId,
+                name: chat.name,
+                avatar: chat.avatar,
+              };
+              const roomId = makeRoomId(currentUser.id, chat.userId);
+              (navigation as any).navigate("ChatRoom", {
+                roomId,
+                target: targetUser,
+              });
+            }}
           >
             <View>
               <Image source={{ uri: chat.avatar }} style={styles.chatAvatar} />
@@ -124,25 +146,24 @@ export default function MessagesScreen() {
 
         <View style={{ height: 90 }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
+// 🎨 STYLE
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingHorizontal: 20, // ✅ Không sát viền
-    paddingTop: 4,
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
-
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 12,
+    marginVertical: 10,
     gap: 14,
   },
-
   searchBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -152,58 +173,49 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
-
   searchInput: {
     flex: 1,
     marginLeft: 10,
     fontSize: 15,
     color: "#444",
   },
-
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
     marginTop: 6,
     marginBottom: 10,
   },
-
   matchesContainer: {
     paddingBottom: 10,
     paddingLeft: 4,
   },
-
   matchItem: {
     alignItems: "center",
     width: 85,
     marginRight: 20,
   },
-
   matchAvatar: {
     width: 65,
     height: 65,
     borderRadius: 50,
     backgroundColor: "#eee",
   },
-
   matchName: {
     fontSize: 13,
     marginTop: 6,
     textAlign: "center",
     width: 80,
   },
-
   divider: {
     height: 1,
     backgroundColor: "#ddd",
     marginVertical: 12,
   },
-
   rowBetween: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-
   chatRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -212,29 +224,24 @@ const styles = StyleSheet.create({
     padding: 12,
     marginTop: 12,
   },
-
   chatAvatar: {
     width: 52,
     height: 52,
     borderRadius: 30,
   },
-
   chatName: {
     fontSize: 15,
     fontWeight: "700",
   },
-
   chatMessage: {
     fontSize: 13,
     color: "#666",
     marginTop: 3,
   },
-
   chatTime: {
     fontSize: 12,
     color: "#888",
   },
-
   onlineDot: {
     width: 14,
     height: 14,
@@ -246,7 +253,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
   },
-
   onlineDotSmall: {
     width: 10,
     height: 10,
