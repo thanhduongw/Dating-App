@@ -51,7 +51,7 @@ export default function OTPScreen() {
                     Alert.alert("Thành công", "Tài khoản đã được tạo thành công!");
                     navigation.replace("SignIn");
                 } else {
-                    navigation.replace("Home");
+                    navigation.replace("Tabs");
                 }
             } else {
                 Alert.alert("Lỗi", "Mã OTP không hợp lệ");

@@ -36,7 +36,7 @@ export async function verifyOTP(otp: string) {
 }
 
 export async function resetPassword(phone: string, newPassword: string) {
-    // Tìm user bằng phone
+    // Tìm user bằng phone 
     const res = await fetch(`${BASE_URL}?phone=${phone}`);
     if (!res.ok) throw new Error("Cannot find account");
     const users = await res.json();

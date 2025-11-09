@@ -1,72 +1,36 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
     View,
     Text,
     Image,
     StyleSheet,
-    ActivityIndicator,
     ScrollView,
     TouchableOpacity,
 } from "react-native";
-import { fakeSwipeService } from "../../services/userApi";
-import { SwipeProfile } from "../../types";
-import { useNavigation } from "@react-navigation/native"; // ✅ dùng đúng hook của react-navigation
+import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { RootStackParamList } from "../../navigation/StackNavigator";
+
+type ProfileDetailRouteProp = RouteProp<RootStackParamList, "ProfileDetail">;
 
 export const ProfileDetailScreen: React.FC = () => {
     const navigation = useNavigation();
-    const [profile, setProfile] = useState<SwipeProfile | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const loadProfile = async () => {
-            try {
-                const profiles = await fakeSwipeService.getSwipeProfiles();
-                setProfile(profiles[0]); // lấy profile đầu tiên
-            } catch (error) {
-                console.error("Lỗi tải hồ sơ:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        loadProfile();
-    }, []);
-
-    if (loading) {
-        return (
-            <View style={styles.center}>
-                <ActivityIndicator size="large" color="#6CC9E3" />
-                <Text style={{ marginTop: 10 }}>Đang tải hồ sơ...</Text>
-            </View>
-        );
-    }
-
-    if (!profile) {
-        return (
-            <View style={styles.center}>
-                <Text>Không tìm thấy hồ sơ!</Text>
-            </View>
-        );
-    }
+    const route = useRoute<ProfileDetailRouteProp>();
+    const { profile } = route.params;
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            {/* 🔙 Nút quay lại */}
             <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                 <Ionicons name="arrow-back" size={26} color="#333" />
             </TouchableOpacity>
 
-            {/* Avatar và thông tin cơ bản */}
             <Image source={{ uri: profile.photos[0] }} style={styles.avatar} />
             <Text style={styles.name}>
                 {profile.name}, {profile.age}
             </Text>
             <Text style={styles.pronouns}>{profile.pronouns}</Text>
             <Text style={styles.job}>{profile.job}</Text>
-
-            {/* Khoảng cách */}
             <Text style={styles.distance}>{profile.distance} km away</Text>
-
             {/* About me */}
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>About me</Text>

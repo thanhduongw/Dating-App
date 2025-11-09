@@ -33,7 +33,6 @@ export default function SignInWithPhone() {
         setLoading(true);
         try {
             await loginUser(phone, password);
-            Alert.alert("Success", "Logged in successfully!");
             navigation.replace("Tabs");
         } catch (err: any) {
             Alert.alert("Login Failed", err.message);

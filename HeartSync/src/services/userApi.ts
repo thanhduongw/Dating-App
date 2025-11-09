@@ -1,39 +1,14 @@
-// src/services/userApi.ts
 import { faker } from '@faker-js/faker';
 import { SwipeProfile } from '../types';
 
+const likedByOthers = new Set<string>(); // Giả lập những người đã like currentUser
+
 export const fakeSwipeService = {
     generateSwipeProfiles: (count: number = 20): SwipeProfile[] => {
-        const pronounsOptions = [
-            'She/her/hers',
-            'He/him/his',
-            'They/them/theirs',
-        ];
-
+        const pronounsOptions = ['She/her/hers', 'He/him/his', 'They/them/theirs'];
         const genders = ['Female', 'Male', 'Non-binary', 'Other'];
-
-        const jobTitles = [
-            'Business Analyst at Tech',
-            'Software Engineer',
-            'Product Designer',
-            'Marketing Manager',
-            'Data Scientist',
-            'UX Researcher',
-            'Project Manager',
-            'Content Creator',
-            'Freelancer',
-            'Teacher',
-            'Photographer',
-        ];
-
-        const educationLevels = [
-            'High School',
-            'Bachelor’s Degree',
-            'Master’s Degree',
-            'PhD',
-            'College Graduate',
-        ];
-
+        const jobTitles = ['Business Analyst', 'Software Engineer', 'Product Designer', 'Teacher', 'Freelancer', 'Photographer'];
+        const educationLevels = ['High School', 'Bachelor’s Degree', 'Master’s Degree', 'PhD', 'College Graduate'];
         const smokingHabits = ['No', 'Occasionally', 'Yes'];
         const drinkingHabits = ['No', 'Socially', 'Often'];
         const childrenOptions = ['No', 'Yes', 'Someday'];
@@ -63,9 +38,15 @@ export const fakeSwipeService = {
 
     getSwipeProfiles: async (): Promise<SwipeProfile[]> => {
         return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(fakeSwipeService.generateSwipeProfiles(15));
-            }, 1000);
+            setTimeout(() => resolve(fakeSwipeService.generateSwipeProfiles(15)), 500);
         });
+    },
+
+    addLike: (profileId: string): boolean => {
+        // Trả về true nếu match xảy ra (người kia đã like currentUser)
+        if (likedByOthers.has(profileId)) return true;
+        // Ngược lại, giả lập người kia sẽ like mình trong tương lai 50%
+        if (Math.random() > 0.5) likedByOthers.add(profileId);
+        return false;
     },
 };

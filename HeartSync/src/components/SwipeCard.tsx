@@ -2,9 +2,9 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import { SwipeProfile } from "../types";
-import { useNavigation } from "expo-router";
-import { RootStackParamList } from "../navigation/StackNavigator";
+import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../navigation/StackNavigator";
 
 const { width, height } = Dimensions.get("window");
 
@@ -18,6 +18,7 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({ profile }) => {
     const handlePress = () => {
         navigation.navigate("ProfileDetail", { profile });
     };
+
     const photo = profile.photos?.[0];
 
     return (
@@ -29,9 +30,7 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({ profile }) => {
                         {profile.name}, {profile.age}
                     </Text>
                     <Text style={styles.job}>{profile.job}</Text>
-                    {profile.distance && (
-                        <Text style={styles.distance}>{profile.distance} km away</Text>
-                    )}
+                    {profile.distance && <Text style={styles.distance}>{profile.distance} km away</Text>}
                 </View>
             </View>
         </TouchableOpacity>
@@ -45,7 +44,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         backgroundColor: "#fff",
         overflow: "hidden",
-        shadowColor: "#000",
+        shadowColor: "#ffffffff",
         shadowOpacity: 0.2,
         shadowRadius: 8,
         shadowOffset: { width: 0, height: 4 },

@@ -1,4 +1,3 @@
-// src/types/index.ts
 export interface SwipeProfile {
     id: string;
     name: string;
@@ -21,5 +20,10 @@ export interface SwipeProfile {
 export interface SwipeAction {
     type: 'like' | 'pass';
     profileId: string;
+    timestamp: Date;
+}
+
+export interface Match {
+    profile: SwipeProfile;
     timestamp: Date;
 }
