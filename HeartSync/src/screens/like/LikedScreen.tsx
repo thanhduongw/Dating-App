@@ -12,20 +12,28 @@ export default function LikedScreen() {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Liked Profiles</Text>
-            </View>
-
             <FlatList
                 data={likedProfiles}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                     <LikeCard
                         profile={item}
-                        onPress={() => navigation.navigate("ProfileDetail", { profile: item })}
+                        onPress={() =>
+                            navigation.navigate("ProfileDetail", { profile: item })
+                        }
                     />
                 )}
-                contentContainerStyle={{ paddingTop: 100 }}
+                ListHeaderComponent={
+                    <View style={styles.header}>
+                        <Text style={styles.headerTitle}>Liked Profiles</Text>
+                    </View>
+                }
+                ListEmptyComponent={
+                    <View style={styles.empty}>
+                        <Text>No liked profiles yet.</Text>
+                    </View>
+                }
+                contentContainerStyle={{ paddingBottom: 20 }}
             />
         </View>
     );
@@ -34,15 +42,15 @@ export default function LikedScreen() {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#fff" },
     header: {
-        position: "absolute",
-        top: 60,
-        left: 0,
-        right: 0,
-        zIndex: 10,
-        flexDirection: "row",
+        paddingTop: 60,
+        paddingBottom: 16,
         alignItems: "center",
-        justifyContent: "center",
-        paddingHorizontal: 20,
     },
     headerTitle: { fontSize: 24, fontWeight: "700", color: "#000" },
+    empty: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: 100,
+    },
 });
