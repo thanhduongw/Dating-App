@@ -6,6 +6,7 @@ import VideoCallScreen from "../screens/message/VideoCallScreen";
 import { SwipeProfile } from "../types";
 import EditProfileScreen from "../screens/profile/EditProfileScreen";
 import { ProfileDetailScreen } from "../screens/profile/ProfileDetailScreen";
+import FilterScreen from "../screens/profile/FilterScreen";
 
 export type RootStackParamList = {
   Tabs: undefined;
@@ -13,6 +14,7 @@ export type RootStackParamList = {
   ChatRoom: undefined;
   VideoCall: undefined;
   ProfileDetail: { profile: SwipeProfile };
+  FilterScreen: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -25,6 +27,7 @@ export default function StackNavigator() {
       <Stack.Screen name="ChatRoom" component={ChatRoomScreen} />
       <Stack.Screen name="VideoCall" component={VideoCallScreen} />
       <Stack.Screen name="ProfileDetail" component={ProfileDetailScreen} />
+      <Stack.Screen name="FilterScreen" component={FilterScreen} />
     </Stack.Navigator>
   );
 }

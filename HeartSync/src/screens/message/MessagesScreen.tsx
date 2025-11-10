@@ -10,9 +10,9 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context"; // ✅ Dùng bản chuẩn mới
 import { currentUser } from "../../services/auth";
 import { makeRoomId } from "../../services/room";
-// 👈 helper tạo roomId
 
 export default function MessagesScreen() {
   const navigation = useNavigation();
@@ -53,108 +53,115 @@ export default function MessagesScreen() {
   ];
 
   return (
-    <View style={styles.container}>
-      {/* Header + Search */}
-      <View style={styles.header}>
-        <TouchableOpacity>
-          <Ionicons name="menu-outline" size={28} color="#444" />
-        </TouchableOpacity>
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.container}>
+        {/* Header + Search */}
+        <View style={styles.header}>
+          <TouchableOpacity>
+            <Ionicons name="menu-outline" size={28} color="#444" />
+          </TouchableOpacity>
 
-        <View style={styles.searchBox}>
-          <Ionicons name="search-outline" size={20} color="#666" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search"
-            placeholderTextColor="#999"
-          />
+          <View style={styles.searchBox}>
+            <Ionicons name="search-outline" size={20} color="#666" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search"
+              placeholderTextColor="#999"
+            />
+          </View>
         </View>
-      </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* MATCHES */}
-        <Text style={styles.sectionTitle}>Matches ({matches.length})</Text>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* MATCHES */}
+          <Text style={styles.sectionTitle}>Matches ({matches.length})</Text>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.matchesContainer}
-        >
-          {matches.map((item) => (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.matchesContainer}
+          >
+            {matches.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.matchItem}
+                onPress={() => {
+                  const roomId = makeRoomId(currentUser.id, item.id);
+                  (navigation as any).navigate("ChatRoom", {
+                    roomId,
+                    target: item,
+                  });
+                }}
+              >
+                <View>
+                  <Image
+                    source={{ uri: item.avatar }}
+                    style={styles.matchAvatar}
+                  />
+                  {item.online && <View style={styles.onlineDot} />}
+                </View>
+                <Text style={styles.matchName}>{item.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <View style={styles.divider} />
+
+          {/* CHATS */}
+          <View style={styles.rowBetween}>
+            <Text style={styles.sectionTitle}>Chats ({chats.length})</Text>
+            <Ionicons name="filter-outline" size={22} color="#444" />
+          </View>
+
+          {chats.map((chat) => (
             <TouchableOpacity
-              key={item.id}
-              style={styles.matchItem}
+              key={chat.id}
+              style={styles.chatRow}
               onPress={() => {
-                const roomId = makeRoomId(currentUser.id, item.id);
-                // ép kiểu navigation để tránh TS lỗi
+                const targetUser = {
+                  id: chat.userId,
+                  name: chat.name,
+                  avatar: chat.avatar,
+                };
+                const roomId = makeRoomId(currentUser.id, chat.userId);
                 (navigation as any).navigate("ChatRoom", {
                   roomId,
-                  target: item,
+                  target: targetUser,
                 });
               }}
             >
               <View>
                 <Image
-                  source={{ uri: item.avatar }}
-                  style={styles.matchAvatar}
+                  source={{ uri: chat.avatar }}
+                  style={styles.chatAvatar}
                 />
-                {item.online && <View style={styles.onlineDot} />}
+                {chat.online && <View style={styles.onlineDotSmall} />}
               </View>
-              <Text style={styles.matchName}>{item.name}</Text>
+
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <View style={styles.rowBetween}>
+                  <Text style={styles.chatName}>{chat.name}</Text>
+                  <Text style={styles.chatTime}>{chat.time}</Text>
+                </View>
+                <Text style={styles.chatMessage}>{chat.message}</Text>
+              </View>
             </TouchableOpacity>
           ))}
+
+          <View style={{ height: 90 }} />
         </ScrollView>
-
-        <View style={styles.divider} />
-
-        {/* CHATS */}
-        <View style={styles.rowBetween}>
-          <Text style={styles.sectionTitle}>Chats ({chats.length})</Text>
-          <Ionicons name="filter-outline" size={22} color="#444" />
-        </View>
-
-        {chats.map((chat) => (
-          <TouchableOpacity
-            key={chat.id}
-            style={styles.chatRow}
-            onPress={() => {
-              const targetUser = {
-                id: chat.userId,
-                name: chat.name,
-                avatar: chat.avatar,
-              };
-              const roomId = makeRoomId(currentUser.id, chat.userId);
-              (navigation as any).navigate("ChatRoom", {
-                roomId,
-                target: targetUser,
-              });
-            }}
-          >
-            <View>
-              <Image source={{ uri: chat.avatar }} style={styles.chatAvatar} />
-              {chat.online && <View style={styles.onlineDotSmall} />}
-            </View>
-
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <View style={styles.rowBetween}>
-                <Text style={styles.chatName}>{chat.name}</Text>
-                <Text style={styles.chatTime}>{chat.time}</Text>
-              </View>
-              <Text style={styles.chatMessage}>{chat.message}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-
-        <View style={{ height: 90 }} />
-      </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
 // 🎨 STYLE
 const styles = StyleSheet.create({
-  container: {
+  safe: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  container: {
+    flex: 1,
     paddingHorizontal: 20,
     paddingTop: 10,
   },

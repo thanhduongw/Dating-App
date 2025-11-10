@@ -95,6 +95,12 @@
       "sender": "userA",
       "text": "hay đó",
       "time": "2025-11-08T20:07:01.357Z"
+    },
+    {
+      "roomId": "userA_userB",
+      "sender": "userA",
+      "text": "Ki v",
+      "time": "2025-11-10T11:22:27.271Z"
     }
   ],
   "userA_userC": [

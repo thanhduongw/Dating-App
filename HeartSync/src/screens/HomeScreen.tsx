@@ -1,13 +1,13 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import {
     View,
     StyleSheet,
     Text,
-    ActivityIndicator,
     Animated,
     PanResponder,
     Dimensions,
     TouchableOpacity,
+    ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -27,12 +27,12 @@ const HomeScreen: React.FC = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [loading, setLoading] = useState(true);
     const [actions, setActions] = useState<SwipeAction[]>([]);
+    const position = useRef(new Animated.ValueXY()).current;
 
     const totalProfiles = profiles.length;
     const progress = totalProfiles > 0 ? currentIndex / totalProfiles : 0;
-    const position = new Animated.ValueXY();
 
-    // Load danh sách hồ sơ từ service
+    // Load danh sách hồ sơ
     const loadProfiles = async () => {
         setLoading(true);
         const data = await fakeSwipeService.getSwipeProfiles();
@@ -58,13 +58,11 @@ const HomeScreen: React.FC = () => {
             duration: 150,
             useNativeDriver: true,
         }).start(async () => {
-            // Lưu action
             setActions((prev) => [
                 ...prev,
                 { type, profileId: profile.id, timestamp: new Date() },
             ]);
 
-            // Nếu like thì lưu hồ sơ
             if (type === "like") {
                 setLikedProfiles((prev) => {
                     const exists = prev.some((p) => p.id === profile.id);
@@ -72,23 +70,19 @@ const HomeScreen: React.FC = () => {
                     return [...prev, profile];
                 });
 
-                // Kiểm tra match từ service
                 const isMatch = await fakeSwipeService.addLike(profile.id);
                 if (isMatch) {
                     alert(`🎉 You matched with ${profile.name}!`);
-
-                    // Chuyển sang MessagesScreen
-                    navigation.navigate("Messages"); // <-- sửa ở đây
+                    navigation.navigate("Messages");
                 }
             }
 
-            // Reset vị trí và tăng index
             position.setValue({ x: 0, y: 0 });
             setCurrentIndex((prev) => prev + 1);
         });
     };
 
-
+    // PanResponder duy nhất
     const panResponder = PanResponder.create({
         onMoveShouldSetPanResponder: (_, gesture) =>
             Math.abs(gesture.dx) > 10 || Math.abs(gesture.dy) > 10,
@@ -122,7 +116,7 @@ const HomeScreen: React.FC = () => {
     if (loading) {
         return (
             <View style={styles.center}>
-                <ActivityIndicator size="large" color="#ff5a90" />
+                <ActivityIndicator size="large" color="#00BCD4" />
             </View>
         );
     }
@@ -135,7 +129,12 @@ const HomeScreen: React.FC = () => {
                     <Ionicons name="refresh" size={26} color="#00BCD4" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>HeartSync</Text>
-                <Ionicons name="options-outline" size={26} color="#00BCD4" />
+                <Ionicons
+                    name="options-outline"
+                    size={26}
+                    color="#00BCD4"
+                    onPress={() => navigation.navigate("FilterScreen" as never)}
+                />
             </View>
 
             {/* Progress Bar */}

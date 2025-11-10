@@ -13,7 +13,7 @@ import io from "socket.io-client";
 import { useRoute, useNavigation } from "@react-navigation/native";
 
 // ⚙️ Thay đổi IP này theo máy bạn
-const SOCKET_URL = "http://192.168.2.101:5000";
+const SOCKET_URL = "http://192.168.1.114:5000";
 
 export default function ChatRoomScreen() {
   const navigation = useNavigation();
