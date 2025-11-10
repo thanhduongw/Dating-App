@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
     View,
     StyleSheet,
@@ -10,26 +10,25 @@ import {
     TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { SwipeProfile, SwipeAction, Match } from "../types";
+import { SwipeProfile } from "../types";
 import { fakeSwipeService } from "../services/userApi";
 import SwipeCard from "../components/SwipeCard";
 import ProgressBar from "../components/ProgressBar";
+import { useNavigation } from "@react-navigation/native";
+import { LikeContext } from "../navigation/TabNavigator";
 
 const { width } = Dimensions.get("window");
 const SWIPE_THRESHOLD = width * 0.25;
 
-const currentUserId = "user-0"; // giả lập user hiện tại
-
 const HomeScreen: React.FC = () => {
+    const navigation = useNavigation();
+    const { likedProfiles, setLikedProfiles } = useContext(LikeContext);
     const [profiles, setProfiles] = useState<SwipeProfile[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [actions, setActions] = useState<SwipeAction[]>([]);
-    const [matches, setMatches] = useState<Match[]>([]);
     const [loading, setLoading] = useState(true);
 
     const totalProfiles = profiles.length;
     const progress = currentIndex / totalProfiles;
-
     const position = new Animated.ValueXY();
 
     const loadProfiles = async () => {
@@ -37,13 +36,36 @@ const HomeScreen: React.FC = () => {
         const data = await fakeSwipeService.getSwipeProfiles();
         setProfiles(data);
         setCurrentIndex(0);
-        setMatches([]); // reset matches khi reload
         setLoading(false);
     };
 
     useEffect(() => {
         loadProfiles();
     }, []);
+
+    const handleSwipe = (type: "like" | "pass") => {
+        const profile = profiles[currentIndex];
+        if (!profile) return;
+
+        const direction = type === "like" ? width : -width;
+
+        Animated.timing(position, {
+            toValue: { x: direction, y: 0 },
+            duration: 150,
+            useNativeDriver: true,
+        }).start(() => {
+            if (type === "like") {
+                setLikedProfiles((prev) => {
+                    const exists = prev.some((p) => p.id === profile.id);
+                    if (exists) return prev;
+                    return [...prev, profile];
+                });
+            }
+
+            position.setValue({ x: 0, y: 0 });
+            setCurrentIndex((prev) => prev + 1);
+        });
+    };
 
     const panResponder = PanResponder.create({
         onMoveShouldSetPanResponder: (_, gesture) =>
@@ -65,33 +87,6 @@ const HomeScreen: React.FC = () => {
         },
     });
 
-    const handleSwipe = (type: "like" | "pass") => {
-        const profile = profiles[currentIndex];
-        if (!profile) return;
-
-        const direction = type === "like" ? width : -width;
-
-        Animated.timing(position, {
-            toValue: { x: direction, y: 0 },
-            duration: 150,
-            useNativeDriver: true,
-        }).start(() => {
-            setActions((prev) => [
-                ...prev,
-                { type, profileId: profile.id, timestamp: new Date() },
-            ]);
-
-            // Kiểm tra match
-            if (type === "like" && fakeSwipeService.addLike(profile.id)) {
-                setMatches((prev) => [...prev, { profile, timestamp: new Date() }]);
-                alert(`🎉 You matched with ${profile.name}!`);
-            }
-
-            position.setValue({ x: 0, y: 0 });
-            setCurrentIndex((prev) => prev + 1);
-        });
-    };
-
     const rotate = position.x.interpolate({
         inputRange: [-width / 2, 0, width / 2],
         outputRange: ["-15deg", "0deg", "15deg"],
@@ -112,32 +107,25 @@ const HomeScreen: React.FC = () => {
 
     return (
         <View style={styles.container}>
-            {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={loadProfiles}>
                     <Ionicons name="refresh" size={26} color="#00BCD4" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>HeartSync</Text>
-                <TouchableOpacity onPress={() => console.log("Open filter")}>
-                    <Ionicons name="options-outline" size={26} color="#00BCD4" />
-                </TouchableOpacity>
+                <Ionicons name="options-outline" size={26} color="#00BCD4" />
             </View>
 
-            {/* Progress Bar */}
             <View style={styles.progressWrapper}>
                 <ProgressBar progress={progress} />
             </View>
 
-            {/* Swipe Cards */}
             {[...profiles].reverse().map((profile, index) => {
-                const realIndex = profiles.length - 1 - index; // index tương ứng với profiles gốc
+                const realIndex = profiles.length - 1 - index;
                 if (realIndex < currentIndex) return null;
-
                 const isTop = realIndex === currentIndex;
-
                 return (
                     <Animated.View
-                        key={`${profile.id}-${realIndex}`} // đảm bảo key duy nhất
+                        key={profile.id}
                         {...(isTop ? panResponder.panHandlers : {})}
                         style={[
                             styles.cardContainer,
@@ -149,16 +137,6 @@ const HomeScreen: React.FC = () => {
                     </Animated.View>
                 );
             })}
-
-            {/* Matches */}
-            <View style={styles.matchContainer}>
-                {matches.map((m) => (
-                    <View key={m.profile.id} style={styles.matchCard}>
-                        <Text style={styles.matchText}>💖 {m.profile.name} matched!</Text>
-                    </View>
-                ))}
-            </View>
-
         </View>
     );
 };
@@ -175,36 +153,11 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-between",
         paddingHorizontal: 20,
-        paddingVertical: 10,
     },
     headerTitle: { fontSize: 24, fontWeight: "700", color: "#000" },
-    progressWrapper: { position: "absolute", top: 110, width: "50%", alignSelf: "center" },
+    progressWrapper: { position: "absolute", top: 110, width: "50%" },
     center: { flex: 1, alignItems: "center", justifyContent: "center" },
     cardContainer: { position: "absolute", top: 150 },
-    matchContainer: {
-        position: "absolute",
-        bottom: 20,
-        width: "90%",
-        alignItems: "center",
-    },
-
-    matchCard: {
-        backgroundColor: "#ffebf0", // màu hồng nhạt
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 20,
-        marginBottom: 8,
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 2,
-    },
-    matchText: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#ff5a90",
-    },
-
 });
+
 export default HomeScreen;

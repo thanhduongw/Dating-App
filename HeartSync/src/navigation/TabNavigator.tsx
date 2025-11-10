@@ -1,11 +1,21 @@
-import React from "react";
+import React, { createContext, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import SubscriptionPlansScreen from "../screens/profile/SubscriptionPlansScreen";
 import MessagesScreen from "../screens/message/MessagesScreen";
 import HomeScreen from "../screens/HomeScreen";
+import LikedScreen from "../screens/like/LikedScreen";
+import { SwipeProfile } from "../types";
 
+// ---- Context chia sẻ dữ liệu likedProfiles ----
+export const LikeContext = createContext<{
+  likedProfiles: SwipeProfile[];
+  setLikedProfiles: React.Dispatch<React.SetStateAction<SwipeProfile[]>>;
+}>({
+  likedProfiles: [],
+  setLikedProfiles: () => { },
+});
 
 function Placeholder({ label }: { label: string }) {
   return (
@@ -26,52 +36,56 @@ export type RootTabParamList = {
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
 export default function TabNavigator() {
+  const [likedProfiles, setLikedProfiles] = useState<SwipeProfile[]>([]);
+
   return (
-    <Tab.Navigator
-      initialRouteName="Home"
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarShowLabel: false,
-        tabBarStyle: styles.tabBar,
-        tabBarIcon: ({ focused }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = "ellipse-outline";
+    <LikeContext.Provider value={{ likedProfiles, setLikedProfiles }}>
+      <Tab.Navigator
+        initialRouteName="Home"
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarShowLabel: false,
+          tabBarStyle: styles.tabBar,
+          tabBarIcon: ({ focused }) => {
+            let iconName: keyof typeof Ionicons.glyphMap = "ellipse-outline";
 
-          switch (route.name) {
-            case "Home":
-              iconName = "home-outline";
-              break;
-            case "Likes":
-              iconName = "heart-outline";
-              break;
-            case "Messages":
-              iconName = "chatbubble-outline";
-              break;
-            case "Subscription":
-              iconName = "person-outline";
-              break;
-            case "Saved":
-              iconName = "bookmark-outline";
-              break;
-          }
+            switch (route.name) {
+              case "Home":
+                iconName = "home-outline";
+                break;
+              case "Likes":
+                iconName = "heart-outline";
+                break;
+              case "Messages":
+                iconName = "chatbubble-outline";
+                break;
+              case "Subscription":
+                iconName = "person-outline";
+                break;
+              case "Saved":
+                iconName = "bookmark-outline";
+                break;
+            }
 
-          const color = focused ? "#5A6CF3" : "#777";
+            const color = focused ? "#5A6CF3" : "#777";
 
-          return (
-            <View style={styles.iconWrap}>
-              <Ionicons name={iconName} size={28} color={color} />
-              {focused && <View style={styles.activeBar} />}
-              {route.name === "Messages" && <View style={styles.badgeDot} />}
-            </View>
-          );
-        },
-      })}
-    >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Likes" children={() => <Placeholder label="Likes" />} />
-      <Tab.Screen name="Messages" component={MessagesScreen} />
-      <Tab.Screen name="Subscription" component={SubscriptionPlansScreen} />
-      <Tab.Screen name="Saved" children={() => <Placeholder label="Saved" />} />
-    </Tab.Navigator>
+            return (
+              <View style={styles.iconWrap}>
+                <Ionicons name={iconName} size={28} color={color} />
+                {focused && <View style={styles.activeBar} />}
+                {route.name === "Messages" && <View style={styles.badgeDot} />}
+              </View>
+            );
+          },
+        })}
+      >
+        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Likes" component={LikedScreen} />
+        <Tab.Screen name="Messages" component={MessagesScreen} />
+        <Tab.Screen name="Subscription" component={SubscriptionPlansScreen} />
+        <Tab.Screen name="Saved" children={() => <Placeholder label="Saved" />} />
+      </Tab.Navigator>
+    </LikeContext.Provider>
   );
 }
 
