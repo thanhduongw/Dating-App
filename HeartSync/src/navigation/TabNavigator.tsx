@@ -5,8 +5,9 @@ import { Ionicons } from "@expo/vector-icons";
 import SubscriptionPlansScreen from "../screens/profile/SubscriptionPlansScreen";
 import MessagesScreen from "../screens/message/MessagesScreen";
 import HomeScreen from "../screens/HomeScreen";
-import LikedScreen from "../screens/like/LikedScreen";
+
 import { SwipeProfile } from "../types";
+import LikedScreen from "../screens/like/LikedScreen";
 
 // ---- Context chia sẻ dữ liệu likedProfiles ----
 export const LikeContext = createContext<{
@@ -14,7 +15,7 @@ export const LikeContext = createContext<{
   setLikedProfiles: React.Dispatch<React.SetStateAction<SwipeProfile[]>>;
 }>({
   likedProfiles: [],
-  setLikedProfiles: () => { },
+  setLikedProfiles: () => {},
 });
 
 function Placeholder({ label }: { label: string }) {
@@ -41,7 +42,7 @@ export default function TabNavigator() {
   return (
     <LikeContext.Provider value={{ likedProfiles, setLikedProfiles }}>
       <Tab.Navigator
-        initialRouteName="Home"
+        initialRouteName="Likes" // ✅ Trang chính là Like (Home)
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarShowLabel: false,
@@ -50,20 +51,17 @@ export default function TabNavigator() {
             let iconName: keyof typeof Ionicons.glyphMap = "ellipse-outline";
 
             switch (route.name) {
-              case "Home":
-                iconName = "home-outline";
-                break;
-              case "Likes":
-                iconName = "heart-outline";
-                break;
-              case "Messages":
-                iconName = "chatbubble-outline";
-                break;
               case "Subscription":
                 iconName = "person-outline";
                 break;
+              case "Likes":
+                iconName = "heart-outline"; // 💜
+                break;
               case "Saved":
                 iconName = "bookmark-outline";
+                break;
+              case "Messages":
+                iconName = "chatbubble-outline";
                 break;
             }
 
@@ -79,11 +77,17 @@ export default function TabNavigator() {
           },
         })}
       >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Likes" component={LikedScreen} />
-        <Tab.Screen name="Messages" component={MessagesScreen} />
+        {/* 👤 Subscription */}
         <Tab.Screen name="Subscription" component={SubscriptionPlansScreen} />
-        <Tab.Screen name="Saved" children={() => <Placeholder label="Saved" />} />
+
+        {/* 💜 Likes → HomeScreen */}
+        <Tab.Screen name="Likes" component={HomeScreen} />
+
+        {/* 🔖 Saved */}
+        <Tab.Screen name="Saved" component={LikedScreen} />
+
+        {/* 💬 Messages */}
+        <Tab.Screen name="Messages" component={MessagesScreen} />
       </Tab.Navigator>
     </LikeContext.Provider>
   );
