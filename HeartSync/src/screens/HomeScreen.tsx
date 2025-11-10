@@ -112,7 +112,12 @@ const HomeScreen: React.FC = () => {
           <Ionicons name="refresh" size={26} color="#00BCD4" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>HeartSync</Text>
-        <Ionicons name="options-outline" size={26} color="#00BCD4" />
+        <Ionicons
+          name="options-outline"
+          size={26}
+          color="#00BCD4"
+          onPress={() => navigation.navigate("FilterScreen" as never)}
+        />
       </View>
 
       <View style={styles.progressWrapper}>
