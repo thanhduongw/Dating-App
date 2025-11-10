@@ -10,32 +10,35 @@ import {
     TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { SwipeProfile } from "../types";
+import { useNavigation } from "@react-navigation/native";
+import { LikeContext } from "../navigation/TabNavigator";
+import { SwipeProfile, SwipeAction } from "../types";
 import { fakeSwipeService } from "../services/userApi";
 import SwipeCard from "../components/SwipeCard";
 import ProgressBar from "../components/ProgressBar";
-import { useNavigation } from "@react-navigation/native";
-import { LikeContext } from "../navigation/TabNavigator";
 
 const { width } = Dimensions.get("window");
 const SWIPE_THRESHOLD = width * 0.25;
 
 const HomeScreen: React.FC = () => {
-    const navigation = useNavigation();
+    const navigation = useNavigation<any>();
     const { likedProfiles, setLikedProfiles } = useContext(LikeContext);
     const [profiles, setProfiles] = useState<SwipeProfile[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [actions, setActions] = useState<SwipeAction[]>([]);
 
     const totalProfiles = profiles.length;
-    const progress = currentIndex / totalProfiles;
+    const progress = totalProfiles > 0 ? currentIndex / totalProfiles : 0;
     const position = new Animated.ValueXY();
 
+    // Load danh sách hồ sơ từ service
     const loadProfiles = async () => {
         setLoading(true);
         const data = await fakeSwipeService.getSwipeProfiles();
         setProfiles(data);
         setCurrentIndex(0);
+        setActions([]);
         setLoading(false);
     };
 
@@ -43,7 +46,8 @@ const HomeScreen: React.FC = () => {
         loadProfiles();
     }, []);
 
-    const handleSwipe = (type: "like" | "pass") => {
+    // Xử lý swipe
+    const handleSwipe = async (type: "like" | "pass") => {
         const profile = profiles[currentIndex];
         if (!profile) return;
 
@@ -53,19 +57,37 @@ const HomeScreen: React.FC = () => {
             toValue: { x: direction, y: 0 },
             duration: 150,
             useNativeDriver: true,
-        }).start(() => {
+        }).start(async () => {
+            // Lưu action
+            setActions((prev) => [
+                ...prev,
+                { type, profileId: profile.id, timestamp: new Date() },
+            ]);
+
+            // Nếu like thì lưu hồ sơ
             if (type === "like") {
                 setLikedProfiles((prev) => {
                     const exists = prev.some((p) => p.id === profile.id);
                     if (exists) return prev;
                     return [...prev, profile];
                 });
+
+                // Kiểm tra match từ service
+                const isMatch = await fakeSwipeService.addLike(profile.id);
+                if (isMatch) {
+                    alert(`🎉 You matched with ${profile.name}!`);
+
+                    // Chuyển sang MessagesScreen
+                    navigation.navigate("Messages"); // <-- sửa ở đây
+                }
             }
 
+            // Reset vị trí và tăng index
             position.setValue({ x: 0, y: 0 });
             setCurrentIndex((prev) => prev + 1);
         });
     };
+
 
     const panResponder = PanResponder.create({
         onMoveShouldSetPanResponder: (_, gesture) =>
@@ -107,6 +129,7 @@ const HomeScreen: React.FC = () => {
 
     return (
         <View style={styles.container}>
+            {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={loadProfiles}>
                     <Ionicons name="refresh" size={26} color="#00BCD4" />
@@ -115,10 +138,12 @@ const HomeScreen: React.FC = () => {
                 <Ionicons name="options-outline" size={26} color="#00BCD4" />
             </View>
 
+            {/* Progress Bar */}
             <View style={styles.progressWrapper}>
                 <ProgressBar progress={progress} />
             </View>
 
+            {/* Swipe Cards */}
             {[...profiles].reverse().map((profile, index) => {
                 const realIndex = profiles.length - 1 - index;
                 if (realIndex < currentIndex) return null;
