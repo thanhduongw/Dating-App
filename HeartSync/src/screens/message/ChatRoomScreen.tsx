@@ -7,16 +7,21 @@ import {
   StyleSheet,
   ScrollView,
   SafeAreaView,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import io from "socket.io-client";
 import { useRoute, useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../navigation/StackNavigator";
 
 // ⚙️ Thay đổi IP này theo máy bạn
-const SOCKET_URL = "http://192.168.1.114:5000";
+const SOCKET_URL = "http://192.168.1.9:5000";
+
+type Nav = NativeStackNavigationProp<RootStackParamList, "ChatRoom">;
 
 export default function ChatRoomScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<Nav>();
   const route = useRoute();
   const { roomId, target } = route.params as any;
 
@@ -24,18 +29,13 @@ export default function ChatRoomScreen() {
   const [text, setText] = useState("");
   const scrollRef = useRef<ScrollView>(null);
 
-  // ✅ user hiện tại (mock tạm)
-
   // ⚙️ Flag phân biệt 2 người
-  // 👉 App đầu tiên để false (userA)
-  // 👉 App thứ hai đổi thành true (userB)
-  const IS_USER_B = true;
+  const IS_USER_B = true; // 👉 Máy 2 để true
 
   const currentUser = IS_USER_B
     ? { id: "userB", name: "User B" }
     : { id: "userA", name: "User A" };
 
-  // ✅ Tạo socket 1 lần duy nhất
   const socketRef = useRef<any>(null);
 
   useEffect(() => {
@@ -47,13 +47,11 @@ export default function ChatRoomScreen() {
       socket.emit("joinRoom", roomId);
     });
 
-    // 🔹 Nhận lại lịch sử tin nhắn từ server
     socket.on("messageHistory", (history) => {
       console.log("📜 History:", history);
       setMessages(history);
     });
 
-    // 🔹 Khi nhận tin nhắn mới
     socket.on("receiveMessage", (msg) => {
       console.log("📩 New message:", msg);
       setMessages((prev) => {
@@ -84,28 +82,53 @@ export default function ChatRoomScreen() {
       text: text.trim(),
     };
     console.log("🚀 Sending:", msg);
-
-    // Chỉ emit, KHÔNG thêm local (tránh hiển thị 2 lần)
     socketRef.current?.emit("sendMessage", msg);
     setText("");
   };
 
-  // ✅ Auto scroll xuống cuối khi có tin mới
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 🔹 Header */}
+      {/* 🔹 Header mới với avatar + video + menu */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={26} color="#444" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          Chat with {target?.name || "userB"}
-        </Text>
-        <View style={styles.statusDot} />
+
+        <View style={styles.userRow}>
+          <Image
+            source={{
+              uri:
+                target?.avatar ||
+                "https://randomuser.me/api/portraits/women/22.jpg",
+            }}
+            style={styles.avatar}
+          />
+          <View>
+            <Text style={styles.userName}>
+              {target?.name || "Ava Jones"}, 25{" "}
+              <Ionicons name="checkmark-circle" size={14} color="#5A6CF3" />
+            </Text>
+            <Text style={styles.subInfo}>she/ her/ hers</Text>
+            <Text style={styles.jobTitle}>Business Analyst at Tech</Text>
+          </View>
+        </View>
+
+        <View style={styles.headerIcons}>
+          {/* 👉 FIXED VIDEO CALL BUTTON */}
+          <Ionicons
+            name="videocam-outline"
+            size={24}
+            color="#444"
+            style={{ marginRight: 12 }}
+            onPress={() => navigation.navigate("VideoCall", { target })}
+          />
+
+          <Ionicons name="ellipsis-vertical" size={20} color="#444" />
+        </View>
       </View>
 
       {/* 🔹 Danh sách tin nhắn */}
@@ -113,6 +136,8 @@ export default function ChatRoomScreen() {
         ref={scrollRef}
         contentContainerStyle={styles.messagesContainer}
       >
+        <Text style={styles.dayText}>Today</Text>
+
         {messages.map((m, idx) => (
           <View
             key={idx}
@@ -135,7 +160,7 @@ export default function ChatRoomScreen() {
         ))}
       </ScrollView>
 
-      {/* 🔹 Nhập tin nhắn */}
+      {/* 🔹 Ô nhập tin nhắn */}
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -148,6 +173,15 @@ export default function ChatRoomScreen() {
           <Ionicons name="send" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
+
+      {/* 🔹 Dòng icon phía dưới */}
+      <View style={styles.bottomActions}>
+        <Ionicons name="globe-outline" size={26} color="#5A6CF3" />
+        <Ionicons name="bulb-outline" size={26} color="#5A6CF3" />
+        <Ionicons name="image-outline" size={26} color="#5A6CF3" />
+        <Ionicons name="camera-outline" size={26} color="#5A6CF3" />
+        <Ionicons name="mic-outline" size={26} color="#5A6CF3" />
+      </View>
     </SafeAreaView>
   );
 }
@@ -156,74 +190,63 @@ export default function ChatRoomScreen() {
 // 💅 STYLE
 // =========================
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
+  container: { flex: 1, backgroundColor: "#fff" },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 14,
-    backgroundColor: "#EFEFFF",
+    padding: 12,
+    backgroundColor: "#fff",
   },
-  headerTitle: {
+  userRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 10,
     flex: 1,
+  },
+  avatar: { width: 48, height: 48, borderRadius: 24, marginRight: 10 },
+  userName: { fontSize: 16, fontWeight: "700", color: "#333" },
+  subInfo: { fontSize: 12, color: "#5A6CF3" },
+  jobTitle: { fontSize: 12, color: "#555" },
+  headerIcons: { flexDirection: "row", alignItems: "center" },
+  messagesContainer: { padding: 16 },
+  dayText: {
     textAlign: "center",
-    fontWeight: "bold",
-    fontSize: 16,
-    color: "#333",
-  },
-  statusDot: {
-    width: 10,
-    height: 10,
-    backgroundColor: "#34C759",
-    borderRadius: 5,
-    marginRight: 10,
-  },
-  messagesContainer: {
-    padding: 16,
+    color: "#888",
+    fontSize: 12,
+    marginBottom: 10,
   },
   messageBubble: {
     maxWidth: "75%",
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 10,
-    marginBottom: 10,
+    marginBottom: 8,
   },
-  myBubble: {
-    backgroundColor: "#5A6CF3",
-    alignSelf: "flex-end",
-  },
-  otherBubble: {
-    backgroundColor: "#EDEDED",
-    alignSelf: "flex-start",
-  },
-  messageText: {
-    fontSize: 15,
-  },
-  myText: {
-    color: "#fff",
-  },
-  otherText: {
-    color: "#000",
-  },
+  myBubble: { backgroundColor: "#5A6CF3", alignSelf: "flex-end" },
+  otherBubble: { backgroundColor: "#EDEDED", alignSelf: "flex-start" },
+  messageText: { fontSize: 15 },
+  myText: { color: "#fff" },
+  otherText: { color: "#000" },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
     backgroundColor: "#F5F5F5",
-    borderTopWidth: 1,
-    borderColor: "#ddd",
+    borderRadius: 25,
+    marginHorizontal: 12,
+    paddingHorizontal: 14,
+    marginBottom: 8,
   },
-  input: {
-    flex: 1,
-    fontSize: 15,
-    color: "#000",
-  },
+  input: { flex: 1, fontSize: 15, color: "#000" },
   sendBtn: {
     backgroundColor: "#5A6CF3",
     borderRadius: 20,
     padding: 10,
     marginLeft: 8,
+  },
+  bottomActions: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    paddingVertical: 10,
+    backgroundColor: "#fff",
   },
 });

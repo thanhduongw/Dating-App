@@ -12,7 +12,7 @@ export type RootStackParamList = {
   Tabs: undefined;
   EditProfile: undefined;
   ChatRoom: undefined;
-  VideoCall: undefined;
+  VideoCall: { target: any };
   ProfileDetail: { profile: SwipeProfile };
   FilterScreen: undefined;
 };

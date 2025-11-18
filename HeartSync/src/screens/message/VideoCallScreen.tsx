@@ -3,128 +3,117 @@ import {
   View,
   Text,
   StyleSheet,
+  Image,
   ImageBackground,
   TouchableOpacity,
-  Image,
-  SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 export default function VideoCallScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { target } = route.params as any;
 
-  const remoteUser = {
-    name: "Ava Jones",
-    avatar: "https://randomuser.me/api/portraits/women/22.jpg",
-    bg: "https://randomuser.me/api/portraits/men/40.jpg",
-  };
+  // fallback nếu target không có avatar:
+  const avatar = target?.avatar || "https://i.imgur.com/3QF0u7y.png";
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ImageBackground
-        source={{ uri: remoteUser.bg }}
-        blurRadius={8}
-        style={styles.bgImage}
+    <ImageBackground source={{ uri: avatar }} blurRadius={40} style={styles.bg}>
+      {/* Back */}
+      <TouchableOpacity
+        style={styles.backBtn}
+        onPress={() => navigation.goBack()}
       >
-        {/* Top Bar */}
-        <View style={styles.topBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-down" size={30} color="#fff" />
-          </TouchableOpacity>
+        <Ionicons name="chevron-down" size={30} color="#fff" />
+      </TouchableOpacity>
 
-          <TouchableOpacity>
-            <Ionicons name="ellipsis-vertical" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
+      {/* Menu */}
+      <TouchableOpacity style={styles.menuBtn}>
+        <Ionicons name="ellipsis-vertical" size={26} color="#fff" />
+      </TouchableOpacity>
 
-        {/* Avatar & Info */}
-        <View style={styles.centerContainer}>
-          <Image source={{ uri: remoteUser.avatar }} style={styles.avatar} />
-          <Text style={styles.nameText}>{remoteUser.name}</Text>
-          <Text style={styles.statusText}>Calling...</Text>
-        </View>
+      {/* Avatar Center */}
+      <View style={styles.centerBox}>
+        <Image source={{ uri: avatar }} style={styles.avatar} />
+        <Text style={styles.nameText}>{target?.name || "Unknown"}</Text>
+        <Text style={styles.callingText}>Calling...</Text>
+      </View>
 
-        {/* Bottom Control Buttons */}
-        <View style={styles.controls}>
-          <TouchableOpacity style={styles.controlBtn}>
-            <Ionicons name="camera-reverse" size={24} color="#fff" />
-          </TouchableOpacity>
+      {/* Bottom Action Buttons */}
+      <View style={styles.actionRow}>
+        <TouchableOpacity style={styles.iconBtn}>
+          <Ionicons name="refresh" size={28} color="#fff" />
+        </TouchableOpacity>
 
-          <TouchableOpacity style={styles.controlBtn}>
-            <Ionicons name="mic-off" size={26} color="#fff" />
-          </TouchableOpacity>
+        <TouchableOpacity style={styles.iconBtn}>
+          <Ionicons name="mic-outline" size={28} color="#fff" />
+        </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.endCallBtn}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="call" size={26} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </ImageBackground>
-    </SafeAreaView>
+        <TouchableOpacity
+          style={[styles.iconBtn, styles.hangupBtn]}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="call-outline" size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
-  bgImage: {
+  bg: {
     flex: 1,
     justifyContent: "space-between",
-    paddingHorizontal: 22, // ✅ Không sát viền
-    paddingBottom: 30,
+    paddingTop: 60,
+    paddingBottom: 60,
   },
-  topBar: {
-    marginTop: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  backBtn: {
+    position: "absolute",
+    top: 40,
+    left: 20,
   },
-  centerContainer: {
+  menuBtn: {
+    position: "absolute",
+    top: 40,
+    right: 20,
+  },
+  centerBox: {
     alignItems: "center",
-    marginTop: -60,
+    marginTop: 40,
   },
   avatar: {
-    width: 110,
-    height: 110,
-    borderRadius: 70,
+    width: 160,
+    height: 160,
+    borderRadius: 100,
     borderWidth: 4,
     borderColor: "#fff",
-    marginBottom: 12,
   },
   nameText: {
-    color: "#fff",
+    marginTop: 16,
+    fontSize: 26,
     fontWeight: "700",
-    fontSize: 22,
+    color: "#fff",
   },
-  statusText: {
-    color: "#ddd",
-    fontSize: 15,
+  callingText: {
+    color: "#eee",
     marginTop: 4,
+    fontSize: 16,
   },
-  controls: {
+  actionRow: {
     flexDirection: "row",
     justifyContent: "space-evenly",
-    alignItems: "center",
+    paddingHorizontal: 40,
   },
-  controlBtn: {
-    width: 60,
-    height: 60,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    borderRadius: 30,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  endCallBtn: {
+  iconBtn: {
     width: 68,
     height: 68,
-    backgroundColor: "#FF4B4B",
     borderRadius: 40,
+    backgroundColor: "rgba(255,255,255,0.25)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  hangupBtn: {
+    backgroundColor: "rgba(255,0,0,0.6)",
   },
 });
